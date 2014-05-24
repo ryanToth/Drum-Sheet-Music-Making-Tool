@@ -1,4 +1,4 @@
 Drum-Sheet-Music-Making-Tool
 ============================
 
-A program to make writing sheet music for the drums easy for beginners. Also allows drummers to recreate sheet music and hear how a certain piece is supposed to sound.
+A program to make writing sheet music for the drums easy for beginners. Also allows drummers to recreate sheet music and hear how a certain piece is supposed to sound. It supports up to 4 bars of music, and both 4-4 and 3-4 time signatures.
