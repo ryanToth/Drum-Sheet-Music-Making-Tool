@@ -37,16 +37,16 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
     int timeSigCode = 44;
     int timeSig = 4;
     int noteGetsBeat = 1;
-    int numberOfBars = 2;
+    int numberOfBars = 1;
     double staffShiftX = 0;
     double staffShiftVelX = 0;
     double tempo = 120;
     Rectangle[] hiHatNotePlaces;
     Rectangle[] snareNotePlaces;
     Rectangle[] bassNotePlaces;
-    Note hiHatNotes[] = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
-    Note snareNotes[] = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
-    Note bassNotes[] = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+    Note[] hiHatNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+    Note[] snareNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+    Note[] bassNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
     boolean playBack = false;
     double wait;
     int playBackPosition = 0;
@@ -78,9 +78,6 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
         repaint();
         super.paint(g);
 
-        hiHatNotePlaces = new Rectangle[timeSig * 4 * noteGetsBeat * numberOfBars];
-        snareNotePlaces = new Rectangle[timeSig * 4 * noteGetsBeat * numberOfBars];
-        bassNotePlaces = new Rectangle[timeSig * 4 * noteGetsBeat * numberOfBars];
         setNotePlaces();
 
         Graphics2D g2 = (Graphics2D) g;
@@ -300,10 +297,15 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
     
     public void drawEndLine(Graphics2D g2, int barNumber) {
         
-        g2.drawLine((width-70)+(width-160)*(barNumber-1) - (int) staffShiftX,80, (width-70)+(width-160)*(barNumber-1) - (int) staffShiftX, 200);
+        g2.draw(new Rectangle((width-60)+(width-155)*(barNumber-1) - (int) staffShiftX,80,10,120));
+        g2.drawLine((width-60)+(width-155)*(barNumber-1) - (int) staffShiftX,140, (width-50)+(width-155)*(barNumber-1) - (int) staffShiftX, 140);
     }
     
     public void setNotePlaces() {
+        
+        hiHatNotePlaces = new Rectangle[timeSig * 4 * noteGetsBeat * numberOfBars];
+        snareNotePlaces = new Rectangle[timeSig * 4 * noteGetsBeat * numberOfBars];
+        bassNotePlaces = new Rectangle[timeSig * 4 * noteGetsBeat * numberOfBars];
         
         for (int i = 0; i < timeSig*4*noteGetsBeat*numberOfBars; i++) {
             hiHatNotePlaces[i] = new Rectangle(100+i*(width-152)/(timeSig*4*noteGetsBeat) - (int) staffShiftX,60,40,40);
@@ -382,11 +384,11 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
         int code = e.getKeyCode();
         
         if (code == e.VK_LEFT) {
-            staffShiftVelX = -0.6;
+            staffShiftVelX = -1;
         }
         
         if (code == e.VK_RIGHT) {
-            staffShiftVelX = 0.6;
+            staffShiftVelX = 1;
         }
     }
 
@@ -435,8 +437,15 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
             if (bassNotes[i] != null) {
                 bassNotes[i].shift = 0;
             }
-
         }
-
+    }
+    
+    public void clearNotes() {
+        
+        hiHatNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        snareNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        bassNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        
+        setNotePlaces();
     }
 }

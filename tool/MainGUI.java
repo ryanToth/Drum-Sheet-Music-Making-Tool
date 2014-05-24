@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.Timer;
@@ -50,6 +51,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     JToggleButton showSixteenthCount = new JToggleButton("Sixteenth Count On");
     JToggleButton playLineButton = new JToggleButton("Play Line On");
     Staff staff;
+    NewButtonGUI newProject = null;
     
     public MainGUI() {
         
@@ -164,6 +166,46 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
             staff.actionPerformed(e);
         }
         
+        if (newProject != null) {
+            
+            boolean clear = false;
+            
+            if (staff.numberOfBars != Integer.parseInt((String)newProject.barsChoices.getSelectedItem()))
+                clear = true;
+            
+            staff.numberOfBars = Integer.parseInt((String)newProject.barsChoices.getSelectedItem());
+            
+            if (clear) {
+                staff.clearNotes();
+                staff.staffShiftX = 0;
+            }
+            
+            if (newProject.timeSigChoices.getSelectedItem().equals("4 - 4")) {
+                
+                boolean clearNotes = false;
+                
+                if (staff.timeSigCode != 44)
+                    clearNotes = true;
+                
+                staff.timeSig = 4;
+                staff.timeSigCode = 44;
+                
+                if (clearNotes) staff.clearNotes();
+            }
+            else {
+                
+                boolean clearNotes = false;
+                
+                if (staff.timeSigCode != 34)
+                    clearNotes = true;
+                
+                staff.timeSig = 3;
+                staff.timeSigCode = 34;
+                
+                if (clearNotes) staff.clearNotes();
+            }
+            
+        }
     }
 
     public void addButtonFunctions() {
@@ -199,6 +241,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
                 staff.pauseDelay = 0;
                 staff.staffShiftVelX = 0;
                 staff.staffShiftX = 0;
+                staff.resetNotePositions();
             }
         });
         
@@ -262,6 +305,22 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
                     staff.showSixteenthCount = true;
                     showSixteenthCount.setText("Sixteenth Count On");
                 }
+            }
+        });
+        
+        newButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                
+                newProject = new NewButtonGUI(staff.numberOfBars,staff.timeSigCode);
+
+            }
+        });
+        
+        helpButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                JOptionPane.showMessageDialog(null,"None Yet");
+                
             }
         });
     }
