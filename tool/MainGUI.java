@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -27,7 +28,7 @@ import javax.swing.Timer;
  *
  * @author Ryan
  */
-public class MainGUI extends JFrame implements MouseListener, ActionListener, KeyListener {
+public class MainGUI extends JFrame implements MouseListener, ActionListener, KeyListener, MouseMotionListener {
     
     Timer t = new Timer(1,this);
     JPanel bottomButtonPanel = new JPanel();
@@ -40,16 +41,12 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     JToggleButton loopButton = new JToggleButton("Loop");
     JComboBox tempoSelect;
     JButton helpButton = new JButton("Help");
-    JButton wholeNote = new JButton();
-    JButton halfNote = new JButton();
-    JButton quarterNote = new JButton();
-    JButton eigthNote = new JButton();
-    JButton sixteenthNote = new JButton();
     JToggleButton addDot = new JToggleButton();
     JToggleButton showQuarterCount = new JToggleButton("Quarter Count On");
     JToggleButton showEigthCount = new JToggleButton("Eigth Count On");
     JToggleButton showSixteenthCount = new JToggleButton("Sixteenth Count On");
     JToggleButton playLineButton = new JToggleButton("Play Line On");
+    JButton clearButton = new JButton("Clear Notes");
     Staff staff;
     NewButtonGUI newProject = null;
     
@@ -72,6 +69,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         
         staff.addMouseListener(this);
         staff.addKeyListener(this);
+        staff.addMouseMotionListener(this);
         addKeyListener(this);
         topButtonPanel.addMouseListener(this);
         bottomButtonPanel.addMouseListener(this);
@@ -90,7 +88,9 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         showQuarterCount.addKeyListener(this);
         showEigthCount.addKeyListener(this);
         showSixteenthCount.addKeyListener(this);
+        clearButton.addKeyListener(this);
         
+        bottomButtonPanel.add(clearButton);
         bottomButtonPanel.add(playLineButton);
         bottomButtonPanel.add(showQuarterCount);
         bottomButtonPanel.add(showEigthCount);
@@ -139,7 +139,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
 
     @Override
     public void mousePressed(MouseEvent e) {
- 
+        staff.mousePressed(e);
     }
 
     @Override
@@ -319,8 +319,16 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         helpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                JOptionPane.showMessageDialog(null,"None Yet");
+                String note = "Click and drag the staff to move it left or right \n"
+                        + "This can also be accomplished using the arrow keys";
                 
+                JOptionPane.showMessageDialog(null,note);
+            }
+        });
+        
+        clearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                staff.clearNotes();
             }
         });
     }
@@ -338,6 +346,16 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     @Override
     public void keyReleased(KeyEvent e) {
         staff.keyReleased(e);
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        staff.mouseDragged(e);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        
     }
 
 }

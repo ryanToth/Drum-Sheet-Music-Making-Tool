@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.io.InputStream;
 import java.net.URL;
 import javax.swing.JPanel;
@@ -30,7 +31,7 @@ import sun.audio.AudioStream;
  *
  * @author Ryan
  */
-public class Staff extends JPanel implements ActionListener, KeyListener {
+public class Staff extends JPanel implements ActionListener, KeyListener, MouseMotionListener {
 
     int height = 290, width = 1050;
     Timer t = new Timer(1, this);
@@ -64,6 +65,11 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
     boolean showQuarterCount = true;
     boolean showEigthCount = true;
     boolean showSixteenthCount = true;
+    boolean drag = false;
+    boolean setStartingDragX = false;
+    double startingDragX = 0;
+    double currentDragX = 0;
+    double beforeStaffShiftX = 0;
 
     Image timeSignature;
     URL imageurl;
@@ -177,6 +183,14 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
         if (staffShiftX + staffShiftVelX > 0 && staffShiftX + staffShiftVelX < getLocationOfEndOfBar() && !playBack) {
             staffShiftX += staffShiftVelX;
             if (pause) playLineXPauseShift += staffShiftVelX;
+            
+            
+        }
+        
+        double dragShift = beforeStaffShiftX + startingDragX - currentDragX;
+        
+        if (drag && dragShift > 0 && dragShift <  getLocationOfEndOfBar()) {
+            staffShiftX = beforeStaffShiftX + startingDragX - currentDragX;
         }
         
         moveNotes();
@@ -281,10 +295,21 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
 
     public void mousePressed(MouseEvent e) {
         
+        drag = true;
+        
+        if (!setStartingDragX) {
+            setStartingDragX = true;
+            startingDragX = e.getX();
+            currentDragX = e.getX();
+            beforeStaffShiftX = staffShiftX;
+        }
+        
     }
 
     public void mouseReleased(MouseEvent e) {
         
+        drag = false;
+        setStartingDragX = false;
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -392,11 +417,10 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
         }
     }
 
-    
-    public void keyReleased(KeyEvent e) {
-        
+        public void keyReleased(KeyEvent e) {
+
         int code = e.getKeyCode();
-        
+
         if (code == e.VK_LEFT || code == e.VK_RIGHT) {
             staffShiftVelX = 0;
         }
@@ -439,13 +463,23 @@ public class Staff extends JPanel implements ActionListener, KeyListener {
             }
         }
     }
-    
+
     public void clearNotes() {
-        
+
         hiHatNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
         snareNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
         bassNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
-        
+
         setNotePlaces();
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        currentDragX = e.getX();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        
     }
 }
