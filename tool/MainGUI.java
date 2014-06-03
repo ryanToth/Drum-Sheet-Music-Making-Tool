@@ -15,6 +15,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -58,6 +59,37 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
         setResizable(false);
+        this.setLayout(new BorderLayout());
+        
+        addButtonFunctions();
+        
+        setUpBottomButtons();
+        setUpTopButtons();
+        
+        staff = new Staff();
+        
+        staff.addMouseListener(this);
+        staff.addKeyListener(this);
+        staff.addMouseMotionListener(this);
+        addKeyListener(this);
+        topButtonPanel.addMouseListener(this);
+        bottomButtonPanel.addMouseListener(this);
+                
+        addMouseListener(this);
+        
+        add(bottomButtonPanel, BorderLayout.SOUTH);
+        add(topButtonPanel,BorderLayout.NORTH);
+        add(staff,BorderLayout.CENTER);
+        validate();
+    }
+    
+    public void init() {
+        t.start();
+        setSize(1050,400);
+        //setLocationRelativeTo(null);
+        //setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
+        //setResizable(false);
         this.setLayout(new BorderLayout());
         
         addButtonFunctions();
@@ -167,16 +199,9 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         }
         
         if (newProject != null) {
-            
-            boolean clear = false;
-            
-            if (staff.numberOfBars != Integer.parseInt((String)newProject.barsChoices.getSelectedItem()))
-                clear = true;
-            
-            staff.numberOfBars = Integer.parseInt((String)newProject.barsChoices.getSelectedItem());
-            
-            if (clear) {
-                staff.clearNotes();
+
+            if (staff.numberOfBars != Integer.parseInt((String)newProject.barsChoices.getSelectedItem())) {
+                staff.changeNumberOfBars(Integer.parseInt((String)newProject.barsChoices.getSelectedItem()));
                 staff.staffShiftX = 0;
             }
             

@@ -22,6 +22,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.io.InputStream;
 import java.net.URL;
+import javax.swing.JApplet;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import sun.audio.AudioPlayer;
@@ -76,13 +77,18 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
 
     public void Staff() {
 
+        //setVisible(true);
         t.start();
     }
 
+    public void init() {
+        t.start();
+    }
+    
     public void paint(Graphics g) {
 
-        repaint();
         super.paint(g);
+        repaint();
 
         setNotePlaces();
 
@@ -369,12 +375,18 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
         for (int i = 0; i < timeSig*4*noteGetsBeat*numberOfBars; i++) {
             if (tmp[i] != null) {
                 tmp[i].connected = false;
+                tmp[i].dottedConnected = false;
+                
+                if (i > 2 && tmp[i-3] != null && (tmp[i-3].value == 0.75 || tmp[i-3].value == 0.5 || (tmp[i-2].value == 0.5 && tmp[i-3].value == 0.25)) && tmp[i].value < 1
+                        && (i+1)%4 == 0)
+                    tmp[i].dottedConnected = true;
                 
                 if (i > 1 && tmp[i-2] != null && tmp[i-2].value == tmp[i].value && i%4 != 0)
                     tmp[i].connected = true;
                 
-                if (i > 0 && tmp[i-1] != null && tmp[i-1].value == tmp[i].value && i%4 != 0)
+                if (i > 0 && tmp[i-1] != null && tmp[i-1].value == tmp[i].value && (i%4 != 0 || tmp[i].dottedConnected) && !tmp[i-1].dottedConnected)
                     tmp[i].connected = true;
+                
             }
         }
     }
@@ -481,5 +493,29 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
     @Override
     public void mouseMoved(MouseEvent e) {
         
+    }
+    
+    public void changeNumberOfBars(int numberOfBars) {
+        
+        int temporaryBars;
+        
+        if (numberOfBars > this.numberOfBars) temporaryBars = this.numberOfBars;
+        else temporaryBars = numberOfBars;
+        
+        Note[] tmp1 = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        Note[] tmp2 = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        Note[] tmp3 = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        
+        for (int i = 0; i < timeSig * 4 * noteGetsBeat * temporaryBars; i++) {
+            tmp1[i] = hiHatNotes[i];
+            tmp2[i] = snareNotes[i];
+            tmp3[i] = bassNotes[i];
+        }
+        
+        hiHatNotes = tmp1;
+        snareNotes = tmp2;
+        bassNotes = tmp3;
+        
+        this.numberOfBars = numberOfBars;
     }
 }
