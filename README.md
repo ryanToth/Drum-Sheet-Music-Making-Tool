@@ -5,4 +5,4 @@ A program to make writing sheet music for the drums easy for beginners. Also all
 
 NOTE: Works better on MAC rather than WINDOWS
 
-*I did not make nor do I own any of the sprites or backgorunds that I used in the game*
+*I did not make nor do I own any of the sprites or backgorunds that I used in the program*
