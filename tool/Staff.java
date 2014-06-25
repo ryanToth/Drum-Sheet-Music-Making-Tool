@@ -20,9 +20,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import javax.swing.JApplet;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import sun.audio.AudioPlayer;
@@ -75,12 +81,11 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
     Image timeSignature;
     URL imageurl;
 
-    public void Staff() {
-
-        //setVisible(true);
+    public Staff() {
+       
         t.start();
     }
-
+    
     public void init() {
         t.start();
     }
@@ -174,7 +179,7 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
             
             int x;
             
-            if (pause) x = (int)playLineXPause - (int)playLineXPauseShift;
+            if (pause) x = (int)playLineXPause + (int)staffShiftX;
             else x = (int)playLineX;
             
             g2.drawLine(x, 80, x, 200);
@@ -187,10 +192,12 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
         wait = 60000 / (tempo * 4);
         
         if (staffShiftX + staffShiftVelX > 0 && staffShiftX + staffShiftVelX < getLocationOfEndOfBar() && !playBack) {
+            
             staffShiftX += staffShiftVelX;
-            if (pause) playLineXPauseShift += staffShiftVelX;
             
-            
+            if (pause) {
+                playLineXPauseShift += staffShiftVelX;
+            }
         }
         
         double dragShift = beforeStaffShiftX + startingDragX - currentDragX;
@@ -249,11 +256,16 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
                 }
             }
             
-            if (playBackPosition < 9)
+            int beginScroll;
+            
+            if (timeSig == 4) beginScroll = 9;
+            else beginScroll = 6;
+            
+            if (playBackPosition < beginScroll)
                 playLineX = 120 + ((playBackPosition) * (width - 152) / (timeSig * 4));
             
-            else if (playBackPosition < (timeSig * 4 * numberOfBars - 7)) {
-                staffShiftX = ((playBackPosition-8) * ((width - 152) / (timeSig * 4)));
+            else if (playBackPosition < (timeSig * 4 * numberOfBars - (beginScroll - 2))) {
+                staffShiftX = ((playBackPosition-(beginScroll - 1)) * ((width - 152) / (timeSig * 4)));
                 moveNotes();
             }
             else 
@@ -517,5 +529,80 @@ public class Staff extends JPanel implements ActionListener, KeyListener, MouseM
         bassNotes = tmp3;
         
         this.numberOfBars = numberOfBars;
+    }
+    
+    public void saveStaff(String songName) throws IOException {
+        
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("files/saved_songs.txt", true));
+            writer.append("\n" + songName);
+            writer.close();
+
+            PrintWriter writer2 = new PrintWriter(new File("files/" + songName + ".txt"));
+
+            writer2.println(timeSigCode);
+            writer2.println(tempo);
+            writer2.println(numberOfBars);
+            
+            for (int i = 0; i < hiHatNotes.length; i++) {
+                if (hiHatNotes[i] != null)
+                    writer2.print("o");
+                else
+                    writer2.print("-");
+            }
+            
+            writer2.print("\n");
+            
+            for (int i = 0; i < snareNotes.length; i++) {
+                if (snareNotes[i] != null)
+                    writer2.print("o");
+                else
+                    writer2.print("-");
+            }
+            
+            writer2.print("\n");
+            
+            for (int i = 0; i < bassNotes.length; i++) {
+                if (bassNotes[i] != null)
+                    writer2.print("o");
+                else
+                    writer2.print("-");
+            }
+            
+            writer2.close();
+        } 
+        
+        catch (Exception e) {
+            Object[] options = {"Return"};
+                JOptionPane.showOptionDialog(null, "/files/ not found", "Error",
+                        JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+                        null, options, options[0]);
+        }
+    }
+    
+    public void loadStaff(int timeSigCode, double tempo, int numberOfBars, String[] hiHat, String[] snare, String[] bass) {
+        
+        clearNotes();
+        
+        this.timeSigCode = timeSigCode;
+        this.tempo = tempo;
+        this.numberOfBars = numberOfBars;
+        timeSig = timeSigCode/10;
+        
+        hiHatNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        snareNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        bassNotes = new Note[timeSig * 4 * noteGetsBeat * numberOfBars];
+        
+        changeNumberOfBars(numberOfBars);
+        setNotePlaces();
+        
+        for (int i = 0; i < hiHatNotes.length; i++) {
+            
+            if (hiHat[i+1].equals("o")) hiHatNotes[i] = new Note(timeSig, hiHatNotePlaces[i].getCenterX() + staffShiftX, hiHatNotePlaces[i].getCenterY(), 1, (width - 152) / (timeSig * 4));
+            if (snare[i+1].equals("o")) snareNotes[i] = new Note(timeSig, snareNotePlaces[i].getCenterX() + staffShiftX, snareNotePlaces[i].getCenterY(), 2, (width - 152) / (timeSig * 4));
+            if (bass[i+1].equals("o")) bassNotes[i] = new Note(timeSig, bassNotePlaces[i].getCenterX() + staffShiftX, bassNotePlaces[i].getCenterY(), 3, (width - 152) / (timeSig * 4));
+        }
+        
+        updateNotes();
     }
 }

@@ -15,6 +15,15 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -41,6 +50,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     JButton stopButton = new JButton("Stop");
     JToggleButton loopButton = new JToggleButton("Loop");
     JComboBox tempoSelect;
+    JPanel tempoPanel = new JPanel();
     JButton helpButton = new JButton("Help");
     JToggleButton addDot = new JToggleButton();
     JToggleButton showQuarterCount = new JToggleButton("Quarter Count On");
@@ -48,8 +58,11 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     JToggleButton showSixteenthCount = new JToggleButton("Sixteenth Count On");
     JToggleButton playLineButton = new JToggleButton("Play Line On");
     JButton clearButton = new JButton("Clear Notes");
+    JButton saveButton = new JButton("Save Project");
+    JButton loadButton = new JButton("Load Project");
     Staff staff;
     NewButtonGUI newProject = null;
+    JFrame load;
     
     public MainGUI() {
         
@@ -116,12 +129,18 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     
     private void setUpBottomButtons() {
         
+        bottomButtonPanel.setLayout(new GridLayout(1,8));
+        
         playLineButton.addKeyListener(this);
         showQuarterCount.addKeyListener(this);
         showEigthCount.addKeyListener(this);
         showSixteenthCount.addKeyListener(this);
         clearButton.addKeyListener(this);
+        saveButton.addKeyListener(this);
+        loadButton.addKeyListener(this);
         
+        bottomButtonPanel.add(saveButton);
+        bottomButtonPanel.add(loadButton);
         bottomButtonPanel.add(clearButton);
         bottomButtonPanel.add(playLineButton);
         bottomButtonPanel.add(showQuarterCount);
@@ -133,7 +152,6 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         
         String[] tempos = new String[169]; 
         topButtonPanel.setLayout(new GridLayout(1,8));
-        JPanel tempoPanel = new JPanel();
         tempoPanel.setLayout(new GridLayout(1,2));
         
         for (int i = 0; i < 169; i++) {
@@ -141,7 +159,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         }
         
         tempoSelect = new JComboBox(tempos);
-        tempoSelect.setSelectedIndex(110);
+        tempoSelect.setSelectedIndex(80);
         tempoSelect.setSize(30, WIDTH);
         
         newButton.addKeyListener(this);
@@ -194,7 +212,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
 
         if (staff != null) {
             if (tempoSelect != null)
-                staff.tempo = tempoSelect.getSelectedIndex();
+                staff.tempo = Double.parseDouble((String)tempoSelect.getSelectedItem());
             staff.actionPerformed(e);
         }
         
@@ -233,7 +251,7 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
         }
     }
 
-    public void addButtonFunctions() {
+    private void addButtonFunctions() {
 
         playButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -356,6 +374,28 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
                 staff.clearNotes();
             }
         });
+        
+        saveButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    saveProject();
+                } catch (IOException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        loadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    loadProject();
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
     }
 
     @Override
@@ -381,6 +421,97 @@ public class MainGUI extends JFrame implements MouseListener, ActionListener, Ke
     @Override
     public void mouseMoved(MouseEvent e) {
         
+    }
+    
+    private void saveProject() throws IOException {
+
+        boolean valid = false;
+
+        while (!valid) {
+
+            String songName = JOptionPane.showInputDialog(null, "What is the Name of the Song?", "New Song", 1);
+
+            if (songName != null && !songName.equals("") && songName.split(" ").length > 0) {
+                staff.saveStaff(songName);
+                valid = true;
+            } 
+            
+            else if (songName != null) {
+
+                Object[] options = {"Return"};
+                JOptionPane.showOptionDialog(null, "Invalid Name", "Error",
+                        JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+                        null, options, options[0]);
+
+            } else valid = true;
+        }
+    }
+    
+    private void loadProject() throws FileNotFoundException, UnsupportedEncodingException, IOException {
+
+        LinkedList<String> listOfSongs = new LinkedList<>();
+
+        FileInputStream input = new FileInputStream("files/saved_Songs.txt");
+        BufferedReader configReader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        
+        while(configReader.ready()) {
+            String tmp = configReader.readLine();
+            listOfSongs.add(tmp);
+        }
+        
+        makeLoadGUI(listOfSongs);
+    }
+
+    private void makeLoadGUI(LinkedList<String> listOfSongs) {
+
+        load = new JFrame("Load Song");
+        
+        load.setSize(300,200);
+        load.setLocationRelativeTo(null);
+        load.setVisible(true);
+        load.setLayout(new GridLayout(2,1));
+        
+        final JComboBox songOptions;
+        JButton done = new JButton("Done");
+        
+        songOptions = new JComboBox(listOfSongs.toArray());
+        
+        done.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent f) {
+                
+                if (!((String)songOptions.getSelectedItem()).equals(""))
+                    try {
+                        loadSongFile((String)songOptions.getSelectedItem());
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        load.add(songOptions);
+        load.add(done);
+        load.validate();
+    }
+    
+    private void loadSongFile(String name) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        
+        load.dispose();
+        load = null;
+        
+        FileInputStream input = new FileInputStream("files/" + name + ".txt");
+        BufferedReader configReader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        
+        int timeSigCode = Integer.parseInt(configReader.readLine());
+        double tempo = Double.parseDouble(configReader.readLine());
+        int numberOfBars = Integer.parseInt(configReader.readLine());
+        
+        String hiHat = configReader.readLine();
+        String snare = configReader.readLine();
+        String bass = configReader.readLine();
+
+        staff.loadStaff(timeSigCode,tempo,numberOfBars,hiHat.split(""),snare.split(""),bass.split(""));
     }
 
 }
